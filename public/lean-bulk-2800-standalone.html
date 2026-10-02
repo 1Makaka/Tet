@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>LEAN BULK 2800 | Фитнес-трекер набора массы</title>
+  <meta name="theme-color" content="#0a0f1d">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CDN & Lucide Icons CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#0a0f1d',
+              card: '#151f32',
+              border: '#22324d',
+              cyan: '#38bdf8',
+              emerald: '#22c55e',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0a0f1d;
+      color: #f1f5f9;
+      font-family: 'Inter', -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #0a0f1d; }
+    ::-webkit-scrollbar-thumb { background: #22324d; border-radius: 9999px; }
+    .neon-glow-cyan { box-shadow: 0 0 15px rgba(56, 189, 248, 0.25); }
+    .neon-glow-emerald { box-shadow: 0 0 15px rgba(34, 197, 94, 0.25); }
+  </style>
+</head>
+<body class="min-h-screen pb-24 text-slate-100 flex flex-col items-center">
+  <div class="w-full max-w-md mx-auto px-3 py-3">
+    <!-- Header -->
+    <header class="flex items-center justify-between py-2 border-b border-[#22324d] mb-4">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-400">
+          <i data-lucide="flame" class="w-4 h-4"></i>
+        </div>
+        <div>
+          <h1 class="text-sm font-extrabold font-mono tracking-tight text-white">LEAN BULK <span class="text-sky-400">2800</span></h1>
+          <p class="text-[10px] text-slate-400">57 → 67 кг · Оффлайн SPA</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button id="soundToggleBtn" class="w-8 h-8 rounded-lg bg-[#151f32] border border-[#22324d] flex items-center justify-center text-sky-400">
+          <i data-lucide="volume-2" class="w-4 h-4" id="soundIcon"></i>
+        </button>
+        <button id="resetDayBtn" class="px-2.5 h-8 rounded-lg bg-[#151f32] border border-[#22324d] text-[11px] font-medium text-amber-400 hover:bg-[#22324d] flex items-center gap-1">
+          <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Сброс дня
+        </button>
+      </div>
+    </header>
+
+    <!-- TAB 1: DASHBOARD -->
+    <section id="tab-dashboard" class="tab-pane space-y-4">
+      <!-- Weight card -->
+      <div class="p-4 rounded-2xl bg-[#151f32] border border-[#22324d] shadow-lg">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Прогресс веса</span>
+          <span class="text-xs font-mono font-bold text-emerald-400" id="weightGainDisplay">+0.0 кг набрано</span>
+        </div>
+        <div class="flex items-baseline justify-between mb-3">
+          <div class="flex items-baseline gap-1">
+            <span class="text-3xl font-black font-mono text-white" id="currentWeightVal">57.0</span>
+            <span class="text-sm text-sky-400 font-bold">кг</span>
+          </div>
+          <span class="text-xs text-slate-400">Цель: <strong class="text-white font-mono">67.0 кг</strong> (+10 кг)</span>
+        </div>
+        <div class="w-full h-2 rounded-full bg-[#0a0f1d] overflow-hidden border border-[#22324d]">
+          <div id="weightBar" class="h-full bg-gradient-to-r from-sky-400 to-emerald-400 rounded-full" style="width: 5%"></div>
+        </div>
+        <div class="flex gap-2 mt-3 pt-3 border-t border-[#22324d]/60">
+          <button onclick="adjustWeight(-0.1)" class="flex-1 py-1.5 rounded-lg bg-[#0a0f1d] border border-[#22324d] text-xs font-semibold text-slate-300">-0.1 кг</button>
+          <button onclick="adjustWeight(0.1)" class="flex-1 py-1.5 rounded-lg bg-[#0a0f1d] border border-[#22324d] text-xs font-semibold text-slate-300">+0.1 кг</button>
+          <button onclick="adjustWeight(0.5)" class="flex-1 py-1.5 rounded-lg bg-sky-500/20 border border-sky-400/40 text-xs font-bold text-sky-300">+0.5 кг</button>
+        </div>
+      </div>
+
+      <!-- Macros Card -->
+      <div class="p-4 rounded-2xl bg-[#151f32] border border-[#22324d] shadow-lg space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs font-bold text-white uppercase tracking-wider">Суточный прогресс КБЖУ</h2>
+          <span class="text-xs font-mono font-bold text-sky-400"><span id="dashCalCount">0</span> / 2840 ккал</span>
+        </div>
+        <div class="w-full h-2.5 rounded-full bg-[#0a0f1d] overflow-hidden border border-[#22324d]">
+          <div id="dashCalBar" class="h-full bg-gradient-to-r from-sky-500 to-emerald-400 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+        <div class="grid grid-cols-3 gap-2 pt-1 text-center">
+          <div class="bg-[#0a0f1d] p-2 rounded-xl border border-[#22324d]">
+            <span class="text-[10px] text-sky-400 block font-semibold">Белки</span>
+            <span class="text-xs font-mono font-bold text-white" id="dashProtein">0 / 160 г</span>
+          </div>
+          <div class="bg-[#0a0f1d] p-2 rounded-xl border border-[#22324d]">
+            <span class="text-[10px] text-amber-400 block font-semibold">Жиры</span>
+            <span class="text-xs font-mono font-bold text-white" id="dashFat">0 / 64 г</span>
+          </div>
+          <div class="bg-[#0a0f1d] p-2 rounded-xl border border-[#22324d]">
+            <span class="text-[10px] text-emerald-400 block font-semibold">Углеводы</span>
+            <span class="text-xs font-mono font-bold text-white" id="dashCarbs">0 / 398 г</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Meals Checklist -->
+      <div class="p-4 rounded-2xl bg-[#151f32] border border-[#22324d] space-y-2.5">
+        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Чеклист рациона на сегодня</h3>
+        <div id="dashboardMealList" class="space-y-2"></div>
+      </div>
+    </section>
+
+    <!-- TAB 2: NUTRITION -->
+    <section id="tab-nutrition" class="tab-pane hidden space-y-3">
+      <div class="p-3.5 rounded-2xl bg-gradient-to-br from-[#151f32] to-[#0a182d] border border-[#22324d]">
+        <h2 class="text-sm font-bold text-white">Рацион: 3 мощных приема (2840 ккал)</h2>
+        <p class="text-xs text-sky-300 mt-1">📏 Без весов! Рассчитано в кружках, ложках и долях пачек.</p>
+      </div>
+      <div id="nutritionMealsContainer" class="space-y-3"></div>
+    </section>
+
+    <!-- TAB 3: WORKOUT -->
+    <section id="tab-workout" class="tab-pane hidden space-y-4">
+      <!-- Rest Timer -->
+      <div class="p-4 rounded-2xl bg-[#151f32] border border-[#22324d] shadow-lg">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Таймер отдыха</span>
+          <span id="timerStatus" class="text-[10px] text-slate-400">готов</span>
+        </div>
+        <div class="flex items-center justify-between gap-4">
+          <div class="text-3xl font-black font-mono text-white tracking-tight" id="timerDisplay">01:30</div>
+          <div class="flex items-center gap-1.5 flex-1 justify-end">
+            <button onclick="setTimerPreset(90)" class="px-2.5 py-1.5 rounded-lg bg-[#0a0f1d] border border-[#22324d] text-xs font-bold text-slate-300 hover:text-white">90с</button>
+            <button onclick="setTimerPreset(120)" class="px-2.5 py-1.5 rounded-lg bg-[#0a0f1d] border border-[#22324d] text-xs font-bold text-slate-300 hover:text-white">120с</button>
+            <button id="timerToggleBtn" onclick="toggleTimer()" class="px-3.5 py-1.5 rounded-lg bg-sky-500 text-slate-950 font-bold text-xs">Старт</button>
+            <button onclick="resetTimer()" class="p-1.5 rounded-lg bg-[#0a0f1d] border border-[#22324d] text-slate-400"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workout Day Tabs -->
+      <div class="grid grid-cols-3 gap-2 bg-[#0a0f1d] p-1 rounded-xl border border-[#22324d]">
+        <button onclick="selectWorkoutDay('mon')" id="dayBtn-mon" class="py-1.5 text-xs font-bold rounded-lg bg-sky-500 text-slate-950">Пн (День А)</button>
+        <button onclick="selectWorkoutDay('wed')" id="dayBtn-wed" class="py-1.5 text-xs font-bold rounded-lg text-slate-400">Ср (День Б)</button>
+        <button onclick="selectWorkoutDay('fri')" id="dayBtn-fri" class="py-1.5 text-xs font-bold rounded-lg text-slate-400">Пт (День В)</button>
+      </div>
+
+      <!-- Workout Exercises Container -->
+      <div id="workoutContainer" class="space-y-3"></div>
+    </section>
+
+    <!-- TAB 4: GROCERY -->
+    <section id="tab-grocery" class="tab-pane hidden space-y-3">
+      <div class="p-4 rounded-2xl bg-[#151f32] border border-[#22324d]">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-bold text-white">Закупка на неделю Lidl / Aldi</h2>
+            <p class="text-xs text-slate-400">Строго до 50 € (Итого: 49.75 €)</p>
+          </div>
+          <span class="text-xs font-mono font-bold text-emerald-400" id="groceryTotalSpent">0.00 / 49.75 €</span>
+        </div>
+        <div class="w-full h-2 rounded-full bg-[#0a0f1d] overflow-hidden mt-3 border border-[#22324d]">
+          <div id="groceryBar" class="h-full bg-emerald-400 transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+      <div id="groceryListContainer" class="space-y-2"></div>
+    </section>
+
+    <!-- TAB 5: HYDRATION -->
+    <section id="tab-water" class="tab-pane hidden space-y-4">
+      <div class="p-4 rounded-2xl bg-gradient-to-br from-[#151f32] to-[#0f2847] border border-cyan-500/30">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-white">Водный баланс & Анти-Отеки</h2>
+          <span class="text-xs font-mono font-bold text-cyan-400" id="waterTotalCount">0 / 3000 мл</span>
+        </div>
+        <p class="text-xs text-slate-300 mt-0.5">80% воды строго до 18:30 (ночной покой почек)</p>
+        <div class="w-full h-2.5 rounded-full bg-[#0a0f1d] overflow-hidden mt-3 border border-[#22324d]">
+          <div id="waterProgressBar" class="h-full bg-gradient-to-r from-cyan-400 to-sky-400 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- 12 Glasses Grid -->
+      <div class="p-4 rounded-2xl bg-[#151f32] border border-[#22324d] space-y-3">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-300 block">12 стаканов по 250 мл:</span>
+        <div class="grid grid-cols-4 gap-2" id="glassesGrid"></div>
+      </div>
+
+      <!-- 4 Anti Oedema Tips -->
+      <div class="p-4 rounded-2xl bg-[#151f32] border border-[#22324d] space-y-2.5 text-xs text-slate-300">
+        <h3 class="font-bold text-white uppercase tracking-wider text-xs">Памятка: Чистое лицо и рельеф</h3>
+        <div class="p-2.5 rounded-xl bg-[#0a0f1d] border border-[#22324d]">
+          <strong class="text-sky-400">1. Промывай фасоль и тунец</strong> — минус 40% скрытой соли из рассола.
+        </div>
+        <div class="p-2.5 rounded-xl bg-[#0a0f1d] border border-[#22324d]">
+          <strong class="text-sky-400">2. 80% воды строго до 18:30</strong> — после 19:00 только глотки при жажде.
+        </div>
+        <div class="p-2.5 rounded-xl bg-[#0a0f1d] border border-[#22324d]">
+          <strong class="text-sky-400">3. Калий из бананов</strong> — выводит подкожную воду внутрь мышечных волокон.
+        </div>
+        <div class="p-2.5 rounded-xl bg-[#0a0f1d] border border-[#22324d]">
+          <strong class="text-sky-400">4. Сон на спине / приподнятая подушка</strong> — гравитационный лимфодренаж лица.
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="fixed bottom-0 left-0 right-0 z-50 bg-[#0a0f1d]/95 backdrop-blur-md border-t border-[#22324d]">
+    <div class="max-w-md mx-auto grid grid-cols-5 px-2 py-2">
+      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center py-1 text-sky-400">
+        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+        <span class="text-[10px] mt-1 font-semibold">Главная</span>
+      </button>
+      <button onclick="switchTab('nutrition')" id="nav-nutrition" class="flex flex-col items-center py-1 text-slate-400">
+        <i data-lucide="utensils" class="w-5 h-5"></i>
+        <span class="text-[10px] mt-1">Рацион</span>
+      </button>
+      <button onclick="switchTab('workout')" id="nav-workout" class="flex flex-col items-center py-1 text-slate-400">
+        <i data-lucide="dumbbell" class="w-5 h-5"></i>
+        <span class="text-[10px] mt-1">Тренировка</span>
+      </button>
+      <button onclick="switchTab('grocery')" id="nav-grocery" class="flex flex-col items-center py-1 text-slate-400">
+        <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+        <span class="text-[10px] mt-1">Закупка</span>
+      </button>
+      <button onclick="switchTab('water')" id="nav-water" class="flex flex-col items-center py-1 text-slate-400">
+        <i data-lucide="droplets" class="w-5 h-5"></i>
+        <span class="text-[10px] mt-1">Вода</span>
+      </button>
+    </div>
+  </nav>
+
+  <script>
+    // State & Persistent Storage
+    const STORAGE_KEY = 'lean_bulk_standalone_v1';
+    const MEALS_DATA = [
+      {
+        id: 'breakfast',
+        title: 'Завтрак: Power-овсянка',
+        cal: 769, p: 32, f: 24, c: 104,
+        ingredients: [
+          'Овсянка 100 г (1 полная кружка 250 мл)',
+          'Молоко 1.5% 200 мл (4/5 кружки)',
+          'Арахисовая паста 20 г (1 ст. л. с верхом)',
+          'Банан 1 шт. (~120 г)',
+          'Тост цельнозерновой 1 шт. (30 г)'
+        ],
+        recipe: '2.5 мин в микроволновке, пасту размешать в горячей каше до кремовой текстуры.'
+      },
+      {
+        id: 'lunch',
+        title: 'Обед: Курица, рис, овощи + Десерт',
+        cal: 1112, p: 74, f: 20, c: 154,
+        ingredients: [
+          'Куриное филе 200 г (1/5 лотка 1 кг, с ладонь) / Банка тунца 130 г',
+          'Рис длиннозерный 130 г сухой (~2/3 кружки)',
+          'Замороженные овощи 150 г (2 горсти)',
+          'Масло растительное 10 г (1 ст. л.)',
+          'Десерт: Magerquark 200 г + 100 мл молока + 1 банан (вилка 30 сек)'
+        ],
+        recipe: 'Сварить рис 15 мин, филе обжарить с овощами на 1 ст. л. масла. Творог взбить вилкой с молоком и бананом.'
+      },
+      {
+        id: 'dinner',
+        title: 'Ужин: Паста со скрэмблом, фасолью и тостами',
+        cal: 962, p: 54, f: 20, c: 140,
+        ingredients: [
+          'Макароны твердых сортов 125 г (1/4 пачки 500 г)',
+          'Яйца куриные 2 шт.',
+          'Красная фасоль Kidneybohnen 80 г (3 ст. л., промыть от рассола!)',
+          'Овощи 100 г (1 горсть)',
+          'Тосты 2 шт. с 10 г арахисовой пасты'
+        ],
+        recipe: 'Сварить пасту. На сковороде скрэмбл из яиц, фасоли и овощей. Не есть за 1.5ч до сна!'
+      }
+    ];
+
+    const WORKOUT_DAYS = {
+      mon: {
+        title: 'День А: База',
+        exercises: [
+          { id: 'e1', name: 'Сплит-приседы (гантели 10 кг)', sets: 4, reps: '8-10', tip: 'Спина ровно, упор в пятку' },
+          { id: 'e2', name: 'Жим штанги с пола (30 кг)', sets: 4, reps: '8-12', tip: 'Локти 45-60° к корпусу, пауза внизу' },
+          { id: 'e3', name: 'Тяга штанги в наклоне к поясу (30 кг)', sets: 4, reps: '10-12', tip: 'Таз назад, спина с легким прогибом' },
+          { id: 'e4', name: 'Махи в стороны (гантели 10 кг)', sets: 3, reps: '12-15', tip: 'Локти чуть согнуты, без рывков спиной' },
+          { id: 'e5', name: 'Подъем на бицепс (30 кг / 10 кг)', sets: 3, reps: '8-10', tip: 'Локти прижаты к корпусу' }
+        ]
+      },
+      wed: {
+        title: 'День Б: Задняя цепь и плечи',
+        exercises: [
+          { id: 'e6', name: 'Румынская тяга (штанга 30 кг)', sets: 4, reps: '12-15', tip: 'Таз строго назад, спина прямая, колени мягкие' },
+          { id: 'e7', name: 'Армейский жим стоя (штанга 30 кг)', sets: 4, reps: '8-10', tip: 'Сжатые ягодицы и пресс, не прогибай поясницу' },
+          { id: 'e8', name: 'Тяга гантели 10 кг с упором', sets: 4, reps: '12-15', tip: 'Упор защищает позвоночник' },
+          { id: 'e9', name: 'Отжимания с паузой внизу', sets: 3, reps: '12-15', tip: 'Тело в струну, пауза 1 сек внизу' },
+          { id: 'e10', name: 'Французский жим из-за головы (10 кг)', sets: 3, reps: '12-15', tip: 'Локти направлены вперед' }
+        ]
+      },
+      fri: {
+        title: 'День В: Объем и руки',
+        exercises: [
+          { id: 'e11', name: 'Кубковые приседания (10 кг у груди)', sets: 4, reps: '15-20', tip: 'Глубокий присед, колени врозь' },
+          { id: 'e12', name: 'Ягодичный мостик (штанга 30 кг)', sets: 4, reps: '12-15', tip: '2 секунды фиксация вверху' },
+          { id: 'e13', name: 'Отжимания узким хватом', sets: 3, reps: '12-15', tip: 'Локти вдоль ребер, акцент трицепс' },
+          { id: 'e14', name: 'Молот с гантелями (10 кг)', sets: 3, reps: '10-12', tip: 'Нейтральный хват, качает брахиалис' },
+          { id: 'e15', name: 'Планка', sets: 3, reps: '60 сек', tip: 'Втянуть живот, напрячь ягодицы' }
+        ]
+      }
+    };
+
+    const GROCERY_DATA = [
+      { id: 'g1', name: 'Hähnchenbrustfilet (1 кг)', price: 7.99 },
+      { id: 'g2', name: 'Magerquark 0.2% (4 x 500г)', price: 5.96 },
+      { id: 'g3', name: 'Eier Bodenhaltung Kl. M (2 x 10 шт)', price: 3.98 },
+      { id: 'g4', name: 'H-Milch 1.5% (4 x 1 л)', price: 3.96 },
+      { id: 'g5', name: 'TK Kaisergemüse (2 x 1 кг)', price: 3.58 },
+      { id: 'g6', name: 'Kidneybohnen (4 банки)', price: 3.40 },
+      { id: 'g7', name: 'Bananen (~2.1 кг, ~14 шт)', price: 3.13 },
+      { id: 'g8', name: 'Reis Langkorn (2 x 1 кг)', price: 2.98 },
+      { id: 'g9', name: 'Nudeln Penne (3 x 500г)', price: 2.37 },
+      { id: 'g10', name: 'Haferflocken zart (3 x 500г)', price: 2.37 },
+      { id: 'g11', name: 'Thunfisch в с/с (2 банки)', price: 2.38 },
+      { id: 'g12', name: 'Erdnussbutter (1 банка 350г)', price: 1.99 },
+      { id: 'g13', name: 'Vollkorn Toastbrot (2 x 500г)', price: 1.98 },
+      { id: 'g14', name: 'Äpfel (пакет 1.5 кг)', price: 1.99 },
+      { id: 'g15', name: 'Rapsöl (1 л)', price: 1.69 }
+    ];
+
+    let state = {
+      weight: 57.0,
+      meals: {},
+      workoutSets: {},
+      grocery: {},
+      water: 0,
+      sound: true,
+      currentDay: 'mon'
+    };
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) Object.assign(state, JSON.parse(raw));
+      } catch(e){}
+    }
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch(e){}
+    }
+
+    // Audio synthesizer
+    let audioCtx = null;
+    function playBeep(freq = 600, dur = 0.08) {
+      if (!state.sound) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+      } catch(e){}
+    }
+
+    // Tab Switch
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+      const activePane = document.getElementById(`tab-${tabId}`);
+      if (activePane) activePane.classList.remove('hidden');
+
+      document.querySelectorAll('nav button').forEach(b => {
+        b.classList.remove('text-sky-400');
+        b.classList.add('text-slate-400');
+      });
+      const activeNav = document.getElementById(`nav-${tabId}`);
+      if (activeNav) {
+        activeNav.classList.remove('text-slate-400');
+        activeNav.classList.add('text-sky-400');
+      }
+      playBeep(450, 0.04);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Weight Adjust
+    function adjustWeight(delta) {
+      state.weight = Math.round((state.weight + delta) * 10) / 10;
+      saveState();
+      renderDashboard();
+      playBeep(700, 0.06);
+    }
+
+    // Timer Logic
+    let timerDuration = 90;
+    let timerLeft = 90;
+    let timerRunning = false;
+    let timerInterval = null;
+
+    function setTimerPreset(sec) {
+      timerDuration = sec;
+      timerLeft = sec;
+      timerRunning = false;
+      clearInterval(timerInterval);
+      updateTimerUI();
+      playBeep(520, 0.05);
+    }
+
+    function toggleTimer() {
+      if (timerRunning) {
+        timerRunning = false;
+        clearInterval(timerInterval);
+      } else {
+        timerRunning = true;
+        timerInterval = setInterval(() => {
+          if (timerLeft > 0) {
+            timerLeft--;
+            updateTimerUI();
+          } else {
+            timerRunning = false;
+            clearInterval(timerInterval);
+            playBeep(880, 0.4);
+            updateTimerUI();
+          }
+        }, 1000);
+      }
+      updateTimerUI();
+      playBeep(600, 0.05);
+    }
+
+    function resetTimer() {
+      timerLeft = timerDuration;
+      timerRunning = false;
+      clearInterval(timerInterval);
+      updateTimerUI();
+      playBeep(400, 0.05);
+    }
+
+    function updateTimerUI() {
+      const m = Math.floor(timerLeft / 60);
+      const s = timerLeft % 60;
+      document.getElementById('timerDisplay').innerText = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+      const btn = document.getElementById('timerToggleBtn');
+      btn.innerText = timerRunning ? 'Пауза' : (timerLeft === 0 ? 'Заново' : 'Старт');
+      btn.className = timerRunning 
+        ? 'px-3.5 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold text-xs' 
+        : 'px-3.5 py-1.5 rounded-lg bg-sky-500 text-slate-950 font-bold text-xs';
+    }
+
+    // Render Dashboard
+    function renderDashboard() {
+      document.getElementById('currentWeightVal').innerText = state.weight.toFixed(1);
+      const gained = Math.round((state.weight - 57.0) * 10) / 10;
+      document.getElementById('weightGainDisplay').innerText = `${gained >= 0 ? '+' : ''}${gained} кг набрано`;
+      const prog = Math.min(100, Math.max(5, Math.round((gained / 10.0) * 100)));
+      document.getElementById('weightBar').style.width = `${prog}%`;
+
+      // Macros
+      let cal = 0, p = 0, f = 0, c = 0;
+      MEALS_DATA.forEach(m => {
+        if (state.meals[m.id]) {
+          cal += m.cal; p += m.p; f += m.f; c += m.c;
+        }
+      });
+      document.getElementById('dashCalCount').innerText = cal;
+      document.getElementById('dashCalBar').style.width = `${Math.min(100, (cal / 2840) * 100)}%`;
+      document.getElementById('dashProtein').innerText = `${p} / 160 г`;
+      document.getElementById('dashFat').innerText = `${f} / 64 г`;
+      document.getElementById('dashCarbs').innerText = `${c} / 398 г`;
+
+      // Meals on Dashboard
+      const dashList = document.getElementById('dashboardMealList');
+      dashList.innerHTML = MEALS_DATA.map(m => {
+        const isDone = !!state.meals[m.id];
+        return `
+          <div onclick="toggleMeal('${m.id}')" class="p-2.5 rounded-xl border cursor-pointer flex items-center justify-between ${isDone ? 'bg-emerald-950/20 border-emerald-500/40' : 'bg-[#0a0f1d] border-[#22324d]'}">
+            <div class="flex items-center gap-2">
+              <span class="w-5 h-5 rounded-md flex items-center justify-center ${isDone ? 'bg-emerald-500 text-slate-950 font-bold' : 'border border-slate-600'}">
+                ${isDone ? '✓' : ''}
+              </span>
+              <span class="text-xs ${isDone ? 'line-through text-slate-400' : 'text-white font-medium'}">${m.title.split(':')[0]}</span>
+            </div>
+            <span class="text-xs font-mono text-sky-400">${m.cal} ккал</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleMeal(id) {
+      state.meals[id] = !state.meals[id];
+      saveState();
+      playBeep(state.meals[id] ? 750 : 350, 0.08);
+      renderDashboard();
+      renderNutrition();
+    }
+
+    // Render Nutrition
+    function renderNutrition() {
+      const container = document.getElementById('nutritionMealsContainer');
+      container.innerHTML = MEALS_DATA.map((m, idx) => {
+        const isDone = !!state.meals[m.id];
+        return `
+          <div class="p-4 rounded-2xl border ${isDone ? 'bg-[#151f32]/60 border-emerald-500/40' : 'bg-[#151f32] border-[#22324d]'} space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-[10px] text-sky-400 font-mono uppercase font-bold">Прием #${idx+1}</span>
+                <h3 class="text-sm font-bold text-white">${m.title}</h3>
+              </div>
+              <span class="text-xs font-mono font-bold text-sky-400">${m.cal} ккал</span>
+            </div>
+            <div class="bg-[#0a0f1d] p-3 rounded-xl border border-[#22324d] space-y-1 text-xs">
+              <span class="text-[10px] text-slate-400 font-semibold block uppercase">Ингредиенты и бытовые мерки:</span>
+              ${m.ingredients.map(ing => `<div class="text-slate-300 py-0.5">• ${ing}</div>`).join('')}
+            </div>
+            <p class="text-xs text-slate-400 italic">💡 ${m.recipe}</p>
+            <button onclick="toggleMeal('${m.id}')" class="w-full py-2 rounded-xl text-xs font-bold ${isDone ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-sky-500 text-slate-950'}">
+              ${isDone ? '✓ Съедено (отменить)' : 'Отметить как съеденное'}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render Workouts
+    function selectWorkoutDay(day) {
+      state.currentDay = day;
+      document.querySelectorAll('#tab-workout button[id^="dayBtn-"]').forEach(b => {
+        b.className = 'py-1.5 text-xs font-bold rounded-lg text-slate-400';
+      });
+      document.getElementById(`dayBtn-${day}`).className = 'py-1.5 text-xs font-bold rounded-lg bg-sky-500 text-slate-950';
+      renderWorkout();
+      playBeep(500, 0.05);
+    }
+
+    function renderWorkout() {
+      const dayData = WORKOUT_DAYS[state.currentDay];
+      const container = document.getElementById('workoutContainer');
+      container.innerHTML = dayData.exercises.map((ex, idx) => {
+        const setsDone = state.workoutSets[ex.id] || [];
+        return `
+          <div class="p-3.5 rounded-2xl bg-[#151f32] border border-[#22324d] space-y-2.5">
+            <div class="flex items-start justify-between">
+              <div>
+                <span class="text-[10px] text-sky-400 font-mono font-bold">#${idx+1} · ${ex.sets}x${ex.reps}</span>
+                <h4 class="text-xs font-bold text-white mt-0.5">${ex.name}</h4>
+              </div>
+            </div>
+            <div class="grid grid-cols-4 gap-2">
+              ${Array.from({length: ex.sets}).map((_, sIdx) => {
+                const checked = !!setsDone[sIdx];
+                return `
+                  <button onclick="toggleSet('${ex.id}', ${sIdx})" class="py-1.5 rounded-lg border text-xs font-bold ${checked ? 'bg-emerald-500 text-slate-950 border-emerald-400' : 'bg-[#0a0f1d] border-[#22324d] text-slate-400'}">
+                    Сет ${sIdx+1} ${checked ? '✓' : ''}
+                  </button>
+                `;
+              }).join('')}
+            </div>
+            <div class="p-2 rounded-lg bg-[#0a0f1d] border border-[#22324d] text-[11px] text-sky-200">
+              🛡️ <strong>Спина:</strong> ${ex.tip}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleSet(exId, sIdx) {
+      if (!state.workoutSets[exId]) state.workoutSets[exId] = [];
+      state.workoutSets[exId][sIdx] = !state.workoutSets[exId][sIdx];
+      saveState();
+      playBeep(650, 0.08);
+      renderWorkout();
+      // Auto timer trigger on set finish
+      setTimerPreset(90);
+      toggleTimer();
+    }
+
+    // Render Grocery
+    function renderGrocery() {
+      const container = document.getElementById('groceryListContainer');
+      let spent = 0;
+      container.innerHTML = GROCERY_DATA.map(item => {
+        const isBought = !!state.grocery[item.id];
+        if (isBought) spent += item.price;
+        return `
+          <div onclick="toggleGrocery('${item.id}')" class="p-3 rounded-xl border cursor-pointer flex items-center justify-between ${isBought ? 'bg-emerald-950/20 border-emerald-500/30' : 'bg-[#151f32] border-[#22324d]'}">
+            <div class="flex items-center gap-2.5">
+              <span class="w-5 h-5 rounded-md flex items-center justify-center ${isBought ? 'bg-emerald-500 text-slate-950 font-bold' : 'border border-slate-600'}">
+                ${isBought ? '✓' : ''}
+              </span>
+              <span class="text-xs ${isBought ? 'line-through text-slate-500' : 'text-slate-200'}">${item.name}</span>
+            </div>
+            <span class="text-xs font-mono font-bold ${isBought ? 'text-slate-500' : 'text-emerald-400'}">${item.price.toFixed(2)} €</span>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('groceryTotalSpent').innerText = `${spent.toFixed(2)} / 49.75 €`;
+      document.getElementById('groceryBar').style.width = `${Math.min(100, (spent / 49.75) * 100)}%`;
+    }
+
+    function toggleGrocery(id) {
+      state.grocery[id] = !state.grocery[id];
+      saveState();
+      playBeep(state.grocery[id] ? 700 : 350, 0.05);
+      renderGrocery();
+    }
+
+    // Render Water
+    function renderWater() {
+      document.getElementById('waterTotalCount').innerText = `${state.water * 250} / 3000 мл`;
+      document.getElementById('waterProgressBar').style.width = `${Math.min(100, (state.water / 12) * 100)}%`;
+      const grid = document.getElementById('glassesGrid');
+      grid.innerHTML = Array.from({length: 12}).map((_, idx) => {
+        const isFilled = idx < state.water;
+        return `
+          <button onclick="toggleGlass(${idx})" class="p-2.5 rounded-xl border flex flex-col items-center justify-center h-16 ${isFilled ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 font-bold' : 'bg-[#0a0f1d] border-[#22324d] text-slate-500'}">
+            <span class="text-[10px] font-mono">#${idx+1}</span>
+            <span class="text-xs font-mono mt-1">${(idx+1)*250} мл</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function toggleGlass(idx) {
+      state.water = state.water === idx + 1 ? idx : idx + 1;
+      saveState();
+      playBeep(state.water > 0 ? 550 : 300, 0.09);
+      renderWater();
+    }
+
+    // Reset Day
+    document.getElementById('resetDayBtn').addEventListener('click', () => {
+      if (confirm('Сбросить отметки питания, воды и подходов за сегодня? (Вес сохранится)')) {
+        state.meals = {};
+        state.workoutSets = {};
+        state.water = 0;
+        saveState();
+        playBeep(400, 0.2);
+        renderDashboard();
+        renderNutrition();
+        renderWorkout();
+        renderWater();
+      }
+    });
+
+    // Sound toggle
+    document.getElementById('soundToggleBtn').addEventListener('click', () => {
+      state.sound = !state.sound;
+      saveState();
+      document.getElementById('soundIcon').setAttribute('data-lucide', state.sound ? 'volume-2' : 'volume-x');
+      lucide.createIcons();
+    });
+
+    // Init
+    loadState();
+    renderDashboard();
+    renderNutrition();
+    renderWorkout();
+    renderGrocery();
+    renderWater();
+    lucide.createIcons();
+  </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "LEAN BULK 2800",
+  "description": "Мобильный фитнес-трекер премиум-уровня для набора 10 кг сухой массы: рацион 2840 ккал, Full Body тренировки, закупка до 50€ и трекер гидратации.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>LEAN BULK PRO | Фитнес-трекер набора массы</title>
+  <meta name="theme-color" content="#0a0f1d">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <!-- Pure inline CSS styles (Dark Mode, Apple Fitness / Whoop aesthetics) -->
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0f1d;
+      --card: #162032;
+      --card-inner: #0f172a;
+      --border: #22324d;
+      --cyan: #38bdf8;
+      --emerald: #22c55e;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.4;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 90px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .app-container {
+      width: 100%;
+      max-width: 440px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: #0a0f1d;
+      font-size: 16px;
+    }
+    .brand-title {
+      font-size: 15px;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      letter-spacing: -0.5px;
+    }
+    .brand-title span { color: var(--cyan); }
+    .brand-sub { font-size: 10px; color: var(--text-muted); }
+    .header-actions { display: flex; gap: 6px; }
+    .btn-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-icon.active { color: var(--cyan); border-color: rgba(56,189,248,0.4); }
+    .btn-reset {
+      height: 32px;
+      padding: 0 8px;
+      border-radius: 8px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--amber);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+    }
+    .badge-cyan { background: rgba(56,189,248,0.15); color: var(--cyan); border: 1px solid rgba(56,189,248,0.3); }
+    .badge-emerald { background: rgba(34,197,94,0.15); color: var(--emerald); border: 1px solid rgba(34,197,94,0.3); }
+    .badge-red { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+
+    /* Progress bar */
+    .progress-bar-bg {
+      width: 100%;
+      height: 10px;
+      border-radius: 9999px;
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      padding: 1px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 9999px;
+      background: linear-gradient(90deg, var(--cyan), var(--emerald));
+      transition: width 0.3s ease;
+    }
+
+    /* Discipline grid */
+    .grid-90 {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 5px;
+    }
+    .day-tile {
+      height: 28px;
+      border-radius: 6px;
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 10px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+    .day-tile.completed {
+      background: var(--emerald);
+      border-color: #16a34a;
+      color: #0a0f1d;
+    }
+    .day-tile.today {
+      background: rgba(56,189,248,0.2);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 8px rgba(56,189,248,0.4);
+    }
+
+    /* Macros row */
+    .macro-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .macro-box {
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px;
+      text-align: center;
+    }
+    .macro-label { font-size: 10px; font-weight: 600; color: var(--text-muted); }
+    .macro-val { font-size: 14px; font-weight: 900; font-family: var(--font-mono); color: #fff; margin-top: 2px; }
+
+    /* Grocery list */
+    .grocery-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .grocery-item.bought {
+      background: rgba(34,197,94,0.06);
+      border-color: rgba(34,197,94,0.3);
+      opacity: 0.7;
+    }
+    .grocery-item.bought .grocery-name { text-decoration: line-through; color: var(--text-muted); }
+    .grocery-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .custom-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 2px solid #334b73;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: transparent;
+    }
+    .grocery-item.bought .custom-check {
+      background: var(--emerald);
+      border-color: var(--emerald);
+      color: #0a0f1d;
+    }
+    .grocery-name { font-size: 12px; font-weight: 700; color: #fff; line-height: 1.3; }
+    .grocery-sub { font-size: 10px; color: var(--text-muted); display: flex; gap: 4px; align-items: center; margin-top: 2px; }
+    .grocery-tag { background: #0a0f1d; border: 1px solid var(--border); color: var(--cyan); padding: 1px 4px; border-radius: 4px; font-family: var(--font-mono); font-size: 9px; }
+    .price-input-box {
+      display: flex;
+      align-items: center;
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px 6px;
+      flex-shrink: 0;
+    }
+    .price-input {
+      width: 52px;
+      background: transparent;
+      border: none;
+      color: var(--emerald);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 12px;
+      text-align: right;
+      outline: none;
+    }
+
+    /* Hydration glasses */
+    .glasses-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .glass-btn {
+      height: 68px;
+      border-radius: 12px;
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+    }
+    .glass-btn.filled {
+      background: rgba(56,189,248,0.18);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 12px rgba(56,189,248,0.25);
+    }
+
+    /* Navigation */
+    nav.bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(10, 15, 29, 0.95);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      z-index: 100;
+    }
+    .nav-inner {
+      width: 100%;
+      max-width: 440px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      padding: 6px 4px;
+    }
+    .nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 10px;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      padding: 4px 0;
+    }
+    .nav-btn.active { color: var(--cyan); font-weight: 700; }
+    .nav-icon { width: 20px; height: 20px; margin-bottom: 2px; }
+
+    .tab-section { display: none; }
+    .tab-section.active { display: flex; flex-direction: column; gap: 14px; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="brand-logo">⚡</div>
+        <div>
+          <div class="brand-title">LEAN BULK <span>PRO</span></div>
+          <div class="brand-sub">57 → 67 кг · Оффлайн SPA</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="soundBtn" class="btn-icon active" title="Звук включен">🔊</button>
+        <button id="resetDayBtn" class="btn-reset">Сброс дня</button>
+      </div>
+    </header>
+
+    <!-- TAB 1: ДАШБОРД & СТРИКИ -->
+    <section id="tab-dashboard" class="tab-section active">
+      <!-- 90-Day Discipline & Streaks -->
+      <div class="card">
+        <div class="card-title">
+          <span>Дисциплина курса (Стрики)</span>
+          <span class="badge badge-cyan" id="streakBadge">🔥 Стрик: 0 дней</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+          <div>
+            <strong style="color:var(--cyan); font-size:16px; font-family:var(--font-mono);" id="currentDayText">День 1</strong>
+            <span style="color:var(--text-muted); font-size:11px;"> из 90 (<span id="coursePercent">0%</span>)</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; font-size:11px; color:var(--text-muted);">
+            <span>Старт:</span>
+            <input type="date" id="startDateInput" style="background:var(--card-inner); border:1px solid var(--border); color:#fff; border-radius:6px; padding:2px 4px; font-size:10px; font-family:var(--font-mono);" />
+          </div>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="courseBar" style="width: 3%;"></div>
+        </div>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Сетка дней (кликните день для отметки):</div>
+        <div class="grid-90" id="disciplineGrid"></div>
+      </div>
+
+      <!-- Weight Goal Progress -->
+      <div class="card">
+        <div class="card-title">
+          <span>Прогресс веса</span>
+          <span class="badge badge-emerald" id="weightGainBadge">+0.0 кг</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+          <div>
+            <span style="font-size:32px; font-weight:900; font-family:var(--font-mono);" id="currentWeightDisplay">57.0</span>
+            <span style="color:var(--cyan); font-weight:700;">кг</span>
+          </div>
+          <span style="font-size:12px; color:var(--text-muted);">Цель: <strong>67.0 кг</strong> (+10 кг)</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="weightProgressBar" style="width: 5%;"></div>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button onclick="adjustWeight(-0.1)" style="flex:1; padding:6px; border-radius:8px; background:var(--card-inner); border:1px solid var(--border); color:#fff; font-size:11px; font-weight:700; cursor:pointer;">-0.1</button>
+          <button onclick="adjustWeight(0.1)" style="flex:1; padding:6px; border-radius:8px; background:var(--card-inner); border:1px solid var(--border); color:#fff; font-size:11px; font-weight:700; cursor:pointer;">+0.1</button>
+          <button onclick="adjustWeight(0.5)" style="flex:1; padding:6px; border-radius:8px; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.4); color:var(--cyan); font-size:11px; font-weight:700; cursor:pointer;">+0.5 кг</button>
+        </div>
+      </div>
+
+      <!-- Daily Macros (2840 kcal) -->
+      <div class="card">
+        <div class="card-title">
+          <span>Суточный рацион КБЖУ</span>
+          <span style="font-family:var(--font-mono); color:var(--cyan); font-size:12px;"><span id="dashCalories">0</span> / 2840 ккал</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="calBar" style="width: 0%;"></div>
+        </div>
+        <div class="macro-grid">
+          <div class="macro-box">
+            <span class="macro-label" style="color:var(--cyan);">Белки</span>
+            <div class="macro-val" id="dashP">0/160 г</div>
+          </div>
+          <div class="macro-box">
+            <span class="macro-label" style="color:var(--amber);">Жиры</span>
+            <div class="macro-val" id="dashF">0/64 г</div>
+          </div>
+          <div class="macro-box">
+            <span class="macro-label" style="color:var(--emerald);">Углеводы</span>
+            <div class="macro-val" id="dashC">0/398 г</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: РАЦИОН (3 ПРИЕМА БЕЗ ПЕРЕКУСОВ) -->
+    <section id="tab-nutrition" class="tab-section">
+      <div class="card" style="background:linear-gradient(135deg, #162032, #0d1624);">
+        <div class="card-title">
+          <span>Рацион: 3 приема (2840 ккал)</span>
+          <span class="badge badge-cyan">Без весов</span>
+        </div>
+        <p style="font-size:11px; color:var(--text-muted);">
+          Кружки, горсти и ложки. Четкий анаболизм без лишней задержки воды.
+        </p>
+      </div>
+      <div id="mealsList" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </section>
+
+    <!-- TAB 3: ТРЕНИРОВКИ (СХЕМЫ ДВИЖЕНИЯ + ТАЙМЕР) -->
+    <section id="tab-workout" class="tab-section">
+      <!-- Rest Timer -->
+      <div class="card">
+        <div class="card-title">
+          <span>Таймер отдыха между подходами</span>
+          <span class="badge badge-cyan" id="timerBadge">Пауза</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:36px; font-weight:900; font-family:var(--font-mono); color:#fff;" id="timerClock">01:30</div>
+          <div style="display:flex; gap:6px;">
+            <button onclick="setTimerSec(90)" style="padding:6px 10px; border-radius:8px; background:var(--card-inner); border:1px solid var(--border); color:#fff; font-size:11px; font-weight:700; cursor:pointer;">90с</button>
+            <button onclick="setTimerSec(120)" style="padding:6px 10px; border-radius:8px; background:var(--card-inner); border:1px solid var(--border); color:#fff; font-size:11px; font-weight:700; cursor:pointer;">120с</button>
+            <button id="timerPlayBtn" onclick="toggleTimer()" style="padding:6px 14px; border-radius:8px; background:var(--cyan); border:none; color:#0a0f1d; font-size:11px; font-weight:800; cursor:pointer;">Старт</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Day selector -->
+      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; background:var(--card-inner); padding:4px; border-radius:12px; border:1px solid var(--border);">
+        <button onclick="selectWorkoutDay('mon')" id="wday-mon" style="padding:8px; border-radius:8px; background:var(--cyan); color:#0a0f1d; border:none; font-size:11px; font-weight:700; cursor:pointer;">Пн (База)</button>
+        <button onclick="selectWorkoutDay('wed')" id="wday-wed" style="padding:8px; border-radius:8px; background:transparent; color:var(--text-muted); border:none; font-size:11px; font-weight:700; cursor:pointer;">Ср (Задняя)</button>
+        <button onclick="selectWorkoutDay('fri')" id="wday-fri" style="padding:8px; border-radius:8px; background:transparent; color:var(--text-muted); border:none; font-size:11px; font-weight:700; cursor:pointer;">Пт (Объем)</button>
+      </div>
+
+      <div id="workoutExercises" style="display:flex; flex-direction:column; gap:12px;"></div>
+    </section>
+
+    <!-- TAB 4: КОРЗИНА И КАЛЬКУЛЯТОР БЮДЖЕТА -->
+    <section id="tab-grocery" class="tab-section">
+      <div class="card" id="budgetCard">
+        <div class="card-title">
+          <span>Калькулятор бюджета (Lidl/Aldi)</span>
+          <span class="badge" id="budgetStatusBadge">≤ 50.00 €</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+          <div>
+            <span style="font-size:28px; font-weight:900; font-family:var(--font-mono);" id="cartTotalSumDisplay">49.75</span>
+            <span style="font-size:16px; font-weight:700; color:var(--emerald);">€</span>
+          </div>
+          <span style="font-size:11px; color:var(--text-muted);">Лимит: <strong>50.00 €</strong></span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="budgetProgressBar" style="width: 99%;"></div>
+        </div>
+        <p style="font-size:11px; color:var(--text-muted);">
+          ✏️ Вбивайте свои цены в поля ввода напротив товаров — калькулятор мгновенно пересчитает сумму.
+        </p>
+      </div>
+
+      <div id="groceryItemsList" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </section>
+
+    <!-- TAB 5: ВОДНЫЙ БАЛАНС И АНТИ-ОТЕКИ -->
+    <section id="tab-water" class="tab-section">
+      <div class="card" style="background:linear-gradient(135deg, #162032, #0c203b); border-color:rgba(56,189,248,0.3);">
+        <div class="card-title">
+          <span>Водный баланс & Анти-Отеки</span>
+          <span class="badge badge-cyan" id="waterCountBadge">0 / 3000 мл</span>
+        </div>
+        <p style="font-size:11px; color:var(--text-muted);">
+          Цель: 3000 мл. 80% воды строго до 18:30 (ночной покой почек и свежее лицо утром).
+        </p>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="waterProgressBar" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>12 стаканов по 250 мл (нажмите для отметки)</span>
+        </div>
+        <div class="glasses-grid" id="glassesGrid"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>Памятка: Чистое лицо и рельеф</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:11px; color:var(--text-muted);">
+          <div style="background:var(--card-inner); padding:8px; border-radius:8px; border:1px solid var(--border);">
+            <strong style="color:var(--cyan);">1. Промывать фасоль и тунец:</strong> минус 40% натрия из рассола.
+          </div>
+          <div style="background:var(--card-inner); padding:8px; border-radius:8px; border:1px solid var(--border);">
+            <strong style="color:var(--cyan);">2. 80% воды до 18:30:</strong> после 19:00 только редкие глотки при жажде.
+          </div>
+          <div style="background:var(--card-inner); padding:8px; border-radius:8px; border:1px solid var(--border);">
+            <strong style="color:var(--cyan);">3. Калий из бананов:</strong> вытесняет подкожную воду внутрь мышечных волокон.
+          </div>
+          <div style="background:var(--card-inner); padding:8px; border-radius:8px; border:1px solid var(--border);">
+            <strong style="color:var(--cyan);">4. Сон на спине / приподнятая подушка:</strong> гравитационный отток лимфы.
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-bar">
+    <div class="nav-inner">
+      <button onclick="navTo('dashboard')" id="navBtn-dashboard" class="nav-btn active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        <span>Главная</span>
+      </button>
+      <button onclick="navTo('nutrition')" id="navBtn-nutrition" class="nav-btn">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
+        <span>Рацион</span>
+      </button>
+      <button onclick="navTo('workout')" id="navBtn-workout" class="nav-btn">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6.5 6.5 11 11"></path><path d="m21 21-1-1"></path><path d="m3 3 1 1"></path><path d="m18 22 4-4"></path><path d="m2 6 4-4"></path><path d="m3 10 7-7"></path><path d="m14 21 7-7"></path></svg>
+        <span>Тренинг</span>
+      </button>
+      <button onclick="navTo('grocery')" id="navBtn-grocery" class="nav-btn">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+        <span>Бюджет</span>
+      </button>
+      <button onclick="navTo('water')" id="navBtn-water" class="nav-btn">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+        <span>Вода</span>
+      </button>
+    </div>
+  </nav>
+
+  <script>
+    // State & Persistent Storage
+    const STORAGE_KEY = 'lean_bulk_pro_unified_v3';
+
+    const MEALS_CONFIG = [
+      {
+        id: 'breakfast',
+        title: 'Завтрак: Power-овсянка',
+        cal: 769, p: 32, f: 24, c: 104,
+        ingredients: [
+          'Овсянка 100 г (1 полная кружка 250 мл)',
+          'Молоко 1.5% 200 мл (4/5 кружки)',
+          'Арахисовая паста 20 г (1 ст. л. с верхом)',
+          'Банан 1 шт. (~120 г, калий)',
+          'Цельнозерновой тост 1 шт. (30 г)'
+        ],
+        recipe: '2.5 мин в микроволновке, вмешать пасту в горячую кашу до крема.'
+      },
+      {
+        id: 'lunch',
+        title: 'Обед: Курица, рис, овощи + Творожный десерт',
+        cal: 1112, p: 74, f: 20, c: 154,
+        ingredients: [
+          'Куриное филе 200 г (кусок с ладонь) / Банка тунца 130 г',
+          'Рис длиннозерный 130 г сухой (~2/3 кружки)',
+          'Замороженные овощи 150 г (2 горсти)',
+          'Растительное масло 10 г (1 ст. л.)',
+          'Десерт: Magerquark 200 г + 100 мл молока + 1 банан (взбить вилкой)'
+        ],
+        recipe: 'Рис 15 мин, филе обжарить с овощами на масле. Творог взбить вилкой 30 сек.'
+      },
+      {
+        id: 'dinner',
+        title: 'Ужин: Паста со скрэмблом, фасолью и тостами',
+        cal: 962, p: 54, f: 20, c: 140,
+        ingredients: [
+          'Макароны 125 г (1/4 пачки 500 г)',
+          'Яйца 2 шт.',
+          'Красная фасоль 80 г (3 ст. л., промыть от соли!)',
+          'Овощи 100 г (1 горсть)',
+          'Тосты 2 шт. с 10 г арахисовой пасты'
+        ],
+        recipe: 'Сварить пасту, скрэмбл из яиц и фасоли. Не есть за 1.5ч до сна!'
+      }
+    ];
+
+    const WORKOUT_CONFIG = {
+      mon: {
+        name: 'Пн: День А (База)',
+        exercises: [
+          {
+            name: 'Сплит-приседы (гантели 10 кг)',
+            sets: 4, reps: '8-10',
+            rules: [
+              'Вертикальный корпус: не наклоняй грудь к бедру, держи нейтраль в пояснице.',
+              'Упор в переднюю пятку: колено не гуляет внутрь, защищая связки.'
+            ],
+            svg: '<svg viewBox="0 0 160 80" style="width:100%; height:60px; background:#0f172a; border-radius:8px;"><line x1="10" y1="72" x2="150" y2="72" stroke="#334b73" stroke-width="1.5" stroke-dasharray="3 3"/><circle cx="80" cy="20" r="5" fill="#38bdf8"/><line x1="80" y1="25" x2="80" y2="45" stroke="#fff" stroke-width="3"/><polyline points="80,45 100,50 100,72" fill="none" stroke="#fff" stroke-width="2.5"/><polyline points="80,45 60,56 55,72" fill="none" stroke="#64748b" stroke-width="2"/><rect x="77" y="46" width="6" height="12" rx="1" fill="#38bdf8"/><line x1="120" y1="25" x2="120" y2="65" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="2 2"/></svg>'
+          },
+          {
+            name: 'Жим штанги с пола (30 кг)',
+            sets: 4, reps: '8-12',
+            rules: [
+              'Сведенные лопатки: вжаты в пол, поясница в естественном легком прогибе.',
+              'Мягкое касание пола: пауза 0.5 сек без удара локтями о бетон.'
+            ],
+            svg: '<svg viewBox="0 0 160 80" style="width:100%; height:60px; background:#0f172a; border-radius:8px;"><line x1="10" y1="68" x2="150" y2="68" stroke="#334b73" stroke-width="1.5"/><line x1="45" y1="64" x2="105" y2="64" stroke="#fff" stroke-width="3"/><circle cx="36" cy="62" r="5" fill="#38bdf8"/><polyline points="105,64 116,48 124,68" fill="none" stroke="#64748b" stroke-width="2.5"/><line x1="70" y1="64" x2="70" y2="30" stroke="#fff" stroke-width="2.5"/><line x1="52" y1="28" x2="88" y2="28" stroke="#38bdf8" stroke-width="2.5"/><circle cx="52" cy="28" r="4" fill="#38bdf8"/><circle cx="88" cy="28" r="4" fill="#38bdf8"/></svg>'
+          },
+          {
+            name: 'Тяга штанги к поясу в наклоне (30 кг)',
+            sets: 4, reps: '10-12',
+            rules: [
+              'Таз назад + угол 45°: поясница зафиксирована, исключи скругление верха спины.',
+              'Тяга локтями к низу живота: своди лопатки без рывков поясницей.'
+            ],
+            svg: '<svg viewBox="0 0 160 80" style="width:100%; height:60px; background:#0f172a; border-radius:8px;"><line x1="10" y1="72" x2="150" y2="72" stroke="#334b73" stroke-width="1.5"/><circle cx="104" cy="24" r="5" fill="#38bdf8"/><line x1="98" y1="28" x2="68" y2="45" stroke="#fff" stroke-width="3"/><polyline points="68,45 74,58 80,72" fill="none" stroke="#64748b" stroke-width="2.5"/><line x1="75" y1="62" x2="95" y2="62" stroke="#38bdf8" stroke-width="2.5"/><path d="M85 64 Q 88 50 88 38" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="2 2"/></svg>'
+          },
+          {
+            name: 'Махи гантелями в стороны (10 кг)',
+            sets: 3, reps: '12-15',
+            rules: [
+              'Без рывка корпусом: колени чуть пружинят, работа только дельтовидными.',
+              'Локти чуть согнуты и выше кистей в пиковой точке.'
+            ],
+            svg: '<svg viewBox="0 0 160 80" style="width:100%; height:60px; background:#0f172a; border-radius:8px;"><circle cx="80" cy="20" r="5" fill="#38bdf8"/><line x1="80" y1="25" x2="80" y2="55" stroke="#fff" stroke-width="3"/><polyline points="80,55 74,74 M 80,55 86,74" stroke="#64748b" stroke-width="2.5"/><line x1="55" y1="30" x2="105" y2="30" stroke="#38bdf8" stroke-width="2"/><circle cx="55" cy="30" r="4" fill="#38bdf8"/><circle cx="105" cy="30" r="4" fill="#38bdf8"/></svg>'
+          },
+          {
+            name: 'Подъем на бицепс (30 кг / 10 кг)',
+            sets: 3, reps: '8-10',
+            rules: [
+              'Локти прижаты к корпусу и неподвижны: никакого читинга спиной.',
+              'Сжатые ягодицы и пресс: предотвращают прогиб назад в пояснице.'
+            ],
+            svg: '<svg viewBox="0 0 160 80" style="width:100%; height:60px; background:#0f172a; border-radius:8px;"><circle cx="80" cy="20" r="5" fill="#38bdf8"/><line x1="80" y1="25" x2="80" y2="55" stroke="#fff" stroke-width="3"/><polyline points="80,55 75,74 M 80,55 85,74" stroke="#64748b" stroke-width="2.5"/><polyline points="80,30 84,45 80,34" stroke="#38bdf8" stroke-width="2"/><circle cx="80" cy="34" r="4" fill="#38bdf8"/></svg>'
+          }
+        ]
+      },
+      wed: {
+        name: 'Ср: День Б (Задняя цепь и плечи)',
+        exercises: [
+          {
+            name: 'Румынская тяга со штангой (30 кг)',
+            sets: 4, reps: '12-15',
+            rules: [
+              'Таз строго назад (Hip Hinge): колени мягкие, спина в струну.',
+              'Гриф скользит по ногам: минимизирует рычаг нагрузки на поясницу.'
+            ],
+            svg: '<svg viewBox="0 0 160 80" style="width:100%; height:60px; background:#0f172a; border-radius:8px;"><line x1="10" y1="74" x2="150" y2="74" stroke="#334b73" stroke-width="1.5"/><circle cx="105" cy="30" r="5" fill="#38bdf8"/><line x1="100" y1="34" x2="68" y2="48" stroke="#fff" stroke-width="3"/><polyline points="68,48 74,60 80,74" fill="none" stroke="#64748b" stroke-width="2.5"/><line x1="75" y1="64" x2="95" y2="64" stroke="#38bdf8" stroke-width="2.5"/><path d="M60 48 L46 48" stroke="#22c55e" stroke-width="2"/></svg>'
+          },
+          {
+            name: 'Армейский жим стоя (30 кг)',
+            sets: 4, reps: '8-10',
+            rules: [
+              'Ягодичный замок: сожми ягодицы перед жимом для защиты поясницы.',
+              'Штанга строго над затылком в верхней точке траектории.'
+            ],
+            svg: '<svg viewBox="0 0 160 80" style="width:100%; height:60px; background:#0f172a; border-radius:8px;"><circle cx="80" cy="28" r="5" fill="#38bdf8"/><line x1="80" y1="33" x2="80" y2="58" stroke="#fff" stroke-width="3"/><line x1="60" y1="12" x2="100" y2="12" stroke="#38bdf8" stroke-width="2.5"/><circle cx="60" cy="12" r="4" fill="#38bdf8"/><circle cx="100" cy="12" r="4" fill="#38bdf8"/></svg>'
+          },
+          {
+            name: 'Тяга гантели 10 кг с упором',
+            sets: 4, reps: '12-15',
+            rules: [
+              'Опора принимает вес тела: разгружает позвоночник на 50%.',
+              'Тяга к тазобедренному суставу по плавной дуге.'
+            ],
+            svg: '<svg viewBox="0 0 160 80" style="width:100%; height:60px; background:#0f172a; border-radius:8px;"><line x1="40" y1="50" x2="40" y2="74" stroke="#64748b" stroke-width="3"/><line x1="40" y1="50" x2="90" y2="50" stroke="#fff" stroke-width="3"/><circle cx="96" cy="46" r="5" fill="#38bdf8"/><rect x="68" y="58" width="6" height="12" rx="1" fill="#38bdf8"/></svg>'
+          }
+        ]
+      },
+      fri: {
+        name: 'Пт: День В (Объем и руки)',
+        exercises: [
+          {
+            name: 'Кубковые приседания (10 кг)',
+            sets: 4, reps: '15-20',
+            rules: [
+              'Гантель у грудины: работает противовесом, выпрямляя спину.',
+              'Колени широко в стороны носков для безопасной глубины.'
+            ],
+            svg: '<svg viewBox="0 0 160 80" style="width:100%; height:60px; background:#0f172a; border-radius:8px;"><circle cx="80" cy="28" r="5" fill="#38bdf8"/><line x1="80" y1="33" x2="80" y2="55" stroke="#fff" stroke-width="3"/><polyline points="80,55 64,52 66,74 M 80,55 96,52 94,74" stroke="#64748b" stroke-width="2.5"/><rect x="77" y="34" width="6" height="12" rx="1" fill="#38bdf8"/></svg>'
+          },
+          {
+            name: 'Ягодичный мостик (штанга 30 кг)',
+            sets: 4, reps: '12-15',
+            rules: [
+              'Подбородок к груди: смотри вперед, не переразгибай поясницу.',
+              '2 секунды фиксации вверху с максимальным сжатием ягодиц.'
+            ],
+            svg: '<svg viewBox="0 0 160 80" style="width:100%; height:60px; background:#0f172a; border-radius:8px;"><line x1="10" y1="70" x2="150" y2="70" stroke="#334b73" stroke-width="1.5"/><circle cx="45" cy="56" r="5" fill="#38bdf8"/><polyline points="50,60 80,48 105,70" fill="none" stroke="#fff" stroke-width="3"/><line x1="72" y1="44" x2="88" y2="44" stroke="#38bdf8" stroke-width="3"/></svg>'
+          }
+        ]
+      }
+    };
+
+    const GROCERY_DEFAULT = [
+      { id: 'g1', name: 'Куриное филе (грудка)', german: 'Hähnchenbrustfilet', defPrice: 7.99, pack: '1 лоток (1 кг)' },
+      { id: 'g2', name: 'Творог обезжиренный 0.2%', german: 'Magerquark', defPrice: 5.96, pack: '4 пачки по 500г (2 кг)' },
+      { id: 'g3', name: 'Яйца куриные кат. M', german: 'Eier Bodenhaltung Kl. M', defPrice: 3.98, pack: '2 лотка по 10 шт' },
+      { id: 'g4', name: 'Пастеризованное молоко 1.5%', german: 'H-Milch 1.5%', defPrice: 3.96, pack: '4 упаковки по 1 л' },
+      { id: 'g5', name: 'Замороженные овощи микс', german: 'TK Kaisergemüse', defPrice: 3.58, pack: '2 пакета по 1 кг' },
+      { id: 'g6', name: 'Красная фасоль в с/с', german: 'Kidneybohnen', defPrice: 3.40, pack: '4 банки по 400г' },
+      { id: 'g7', name: 'Свежие бананы (калий)', german: 'Bananen', defPrice: 3.13, pack: '~2.1 кг (~14 шт)' },
+      { id: 'g8', name: 'Длиннозерный рис', german: 'Reis Langkorn', defPrice: 2.98, pack: '2 пачки по 1 кг' },
+      { id: 'g9', name: 'Макароны твердых сортов (Пенне)', german: 'Nudeln Penne', defPrice: 2.37, pack: '3 пачки по 500г' },
+      { id: 'g10', name: 'Овсяные хлопья нежные', german: 'Haferflocken zart', defPrice: 2.37, pack: '3 пачки по 500г' },
+      { id: 'g11', name: 'Тунец в собственном соку', german: 'Thunfisch в с/с', defPrice: 2.38, pack: '2 банки по 185г' },
+      { id: 'g12', name: 'Арахисовая паста без сахара', german: 'Erdnussbutter', defPrice: 1.99, pack: '1 банка 350г' },
+      { id: 'g13', name: 'Цельнозерновой тостовый хлеб', german: 'Vollkorn Toastbrot', defPrice: 1.98, pack: '2 пачки по 500г' },
+      { id: 'g14', name: 'Свежие яблоки', german: 'Äpfel', defPrice: 1.99, pack: 'пакет 1.5 кг' },
+      { id: 'g15', name: 'Рапсовое / подсолнечное масло', german: 'Rapsöl', defPrice: 1.69, pack: '1 бутылка 1 л' }
+    ];
+
+    let state = {
+      weight: 57.0,
+      startDate: new Date().toISOString().split('T')[0],
+      completedDays: {},
+      meals: {},
+      workoutSets: {},
+      customPrices: {},
+      boughtItems: {},
+      water: 0,
+      sound: true,
+      currentWorkoutDay: 'mon'
+    };
+
+    function loadData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) Object.assign(state, JSON.parse(raw));
+      } catch(e){}
+    }
+    function saveData() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch(e){}
+    }
+
+    // Audio synthesizer
+    let audioCtx = null;
+    function beep(freq = 600, dur = 0.08) {
+      if (!state.sound) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+      } catch(e){}
+    }
+
+    // Navigation
+    function navTo(tabId) {
+      document.querySelectorAll('.tab-section').forEach(el => el.classList.remove('active'));
+      const target = document.getElementById(`tab-${tabId}`);
+      if (target) target.classList.add('active');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(`navBtn-${tabId}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      beep(500, 0.04);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Weight Adjust
+    function adjustWeight(delta) {
+      state.weight = Math.round((state.weight + delta) * 10) / 10;
+      saveData();
+      renderDashboard();
+      beep(700, 0.05);
+    }
+
+    // Discipline & 90 Days
+    function renderDiscipline() {
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const start = new Date(state.startDate);
+      start.setHours(0,0,0,0);
+      const diff = Math.floor((today - start) / (1000 * 60 * 60 * 24)) + 1;
+      const curDay = Math.min(90, Math.max(1, diff));
+
+      document.getElementById('currentDayText').innerText = `День ${curDay}`;
+      document.getElementById('startDateInput').value = state.startDate;
+
+      // Completed count
+      const doneCount = Object.keys(state.completedDays).filter(k => state.completedDays[k]).length;
+      const pct = Math.min(100, Math.round((doneCount / 90) * 100));
+      document.getElementById('coursePercent').innerText = `${pct}%`;
+      document.getElementById('courseBar').style.width = `${Math.max(3, pct)}%`;
+
+      // Streak
+      let streak = 0;
+      for (let i = curDay; i >= 1; i--) {
+        if (state.completedDays[i]) streak++;
+        else if (i === curDay) continue;
+        else break;
+      }
+      document.getElementById('streakBadge').innerText = `🔥 Стрик: ${streak} ${streak === 1 ? 'день' : streak < 5 ? 'дня' : 'дней'}`;
+
+      // Grid
+      const grid = document.getElementById('disciplineGrid');
+      grid.innerHTML = Array.from({length: 90}).map((_, idx) => {
+        const dNum = idx + 1;
+        const isDone = !!state.completedDays[dNum];
+        const isToday = dNum === curDay;
+        return `
+          <div onclick="toggleDay(${dNum})" class="day-tile ${isDone ? 'completed' : ''} ${isToday ? 'today' : ''}">
+            ${isDone ? '✓' : dNum}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleDay(dNum) {
+      state.completedDays[dNum] = !state.completedDays[dNum];
+      saveData();
+      beep(state.completedDays[dNum] ? 800 : 400, 0.08);
+      renderDiscipline();
+    }
+
+    document.getElementById('startDateInput').addEventListener('change', (e) => {
+      state.startDate = e.target.value;
+      saveData();
+      renderDiscipline();
+    });
+
+    // Render Dashboard
+    function renderDashboard() {
+      document.getElementById('currentWeightDisplay').innerText = state.weight.toFixed(1);
+      const gained = Math.round((state.weight - 57.0) * 10) / 10;
+      document.getElementById('weightGainBadge').innerText = `${gained >= 0 ? '+' : ''}${gained} кг набрано`;
+      const wProg = Math.min(100, Math.max(4, Math.round((gained / 10.0) * 100)));
+      document.getElementById('weightProgressBar').style.width = `${wProg}%`;
+
+      // Macros
+      let cal = 0, p = 0, f = 0, c = 0;
+      MEALS_CONFIG.forEach(m => {
+        if (state.meals[m.id]) {
+          cal += m.cal; p += m.p; f += m.f; c += m.c;
+        }
+      });
+      document.getElementById('dashCalories').innerText = cal;
+      document.getElementById('dashP').innerText = `${p}/160 г`;
+      document.getElementById('dashF').innerText = `${f}/64 г`;
+      document.getElementById('dashC').innerText = `${c}/398 г`;
+      document.getElementById('calBar').style.width = `${Math.min(100, (cal / 2840) * 100)}%`;
+
+      renderDiscipline();
+    }
+
+    // Render Nutrition
+    function renderNutrition() {
+      const container = document.getElementById('mealsList');
+      container.innerHTML = MEALS_CONFIG.map((m, idx) => {
+        const isDone = !!state.meals[m.id];
+        return `
+          <div class="card" style="border-color:${isDone ? 'rgba(34,197,94,0.4)' : 'var(--border)'};">
+            <div class="card-title">
+              <span>Прием #${idx+1}: ${m.title}</span>
+              <span class="badge badge-cyan">${m.cal} ккал</span>
+            </div>
+            <div style="background:var(--card-inner); padding:10px; border-radius:10px; border:1px solid var(--border); font-size:11px; display:flex; flex-direction:column; gap:4px;">
+              <strong style="color:var(--cyan); text-transform:uppercase; font-size:10px;">Ингредиенты (без весов):</strong>
+              ${m.ingredients.map(ing => `<div style="color:var(--text);">• ${ing}</div>`).join('')}
+            </div>
+            <p style="font-size:11px; color:var(--text-muted); font-style:italic;">💡 ${m.recipe}</p>
+            <button onclick="toggleMeal('${m.id}')" style="width:100%; padding:8px; border-radius:8px; font-weight:800; font-size:11px; cursor:pointer; background:${isDone ? 'rgba(34,197,94,0.2)' : 'var(--cyan)'}; color:${isDone ? 'var(--emerald)' : '#0a0f1d'}; border:${isDone ? '1px solid var(--emerald)' : 'none'};">
+              ${isDone ? '✓ Съедено (отменить)' : 'Отметить как съеденное'}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleMeal(id) {
+      state.meals[id] = !state.meals[id];
+      saveData();
+      beep(state.meals[id] ? 750 : 350, 0.08);
+      renderDashboard();
+      renderNutrition();
+    }
+
+    // Timer
+    let timerSec = 90;
+    let timerCur = 90;
+    let timerRunning = false;
+    let timerTimer = null;
+
+    function setTimerSec(s) {
+      timerSec = s;
+      timerCur = s;
+      timerRunning = false;
+      clearInterval(timerTimer);
+      updateTimerUI();
+      beep(550, 0.05);
+    }
+
+    function toggleTimer() {
+      if (timerRunning) {
+        timerRunning = false;
+        clearInterval(timerTimer);
+      } else {
+        timerRunning = true;
+        timerTimer = setInterval(() => {
+          if (timerCur > 0) {
+            timerCur--;
+            updateTimerUI();
+          } else {
+            timerRunning = false;
+            clearInterval(timerTimer);
+            beep(900, 0.35);
+            updateTimerUI();
+          }
+        }, 1000);
+      }
+      updateTimerUI();
+      beep(650, 0.05);
+    }
+
+    function updateTimerUI() {
+      const m = Math.floor(timerCur / 60);
+      const s = timerCur % 60;
+      document.getElementById('timerClock').innerText = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+      const btn = document.getElementById('timerPlayBtn');
+      btn.innerText = timerRunning ? 'Пауза' : (timerCur === 0 ? 'Заново' : 'Старт');
+      btn.style.background = timerRunning ? 'var(--amber)' : 'var(--cyan)';
+      document.getElementById('timerBadge').innerText = timerRunning ? 'Отдых...' : 'Пауза';
+    }
+
+    // Workout
+    function selectWorkoutDay(day) {
+      state.currentWorkoutDay = day;
+      ['mon', 'wed', 'fri'].forEach(d => {
+        const b = document.getElementById(`wday-${d}`);
+        if (d === day) {
+          b.style.background = 'var(--cyan)';
+          b.style.color = '#0a0f1d';
+        } else {
+          b.style.background = 'transparent';
+          b.style.color = 'var(--text-muted)';
+        }
+      });
+      renderWorkout();
+      beep(500, 0.04);
+    }
+
+    function renderWorkout() {
+      const dayData = WORKOUT_CONFIG[state.currentWorkoutDay];
+      const container = document.getElementById('workoutExercises');
+      container.innerHTML = dayData.exercises.map((ex, exIdx) => {
+        const exKey = `${state.currentWorkoutDay}_${exIdx}`;
+        const setsDone = state.workoutSets[exKey] || [];
+        return `
+          <div class="card">
+            <div class="card-title">
+              <span>#${exIdx+1} ${ex.name}</span>
+              <span class="badge badge-cyan">${ex.sets}x${ex.reps}</span>
+            </div>
+            <div>${ex.svg}</div>
+            <div style="background:var(--card-inner); padding:8px; border-radius:8px; border:1px solid var(--border); font-size:11px; display:flex; flex-direction:column; gap:4px;">
+              <strong style="color:var(--emerald);">🛡️ 2 правила безопасности спины:</strong>
+              <div>1. ${ex.rules[0]}</div>
+              <div>2. ${ex.rules[1]}</div>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(${ex.sets}, 1fr); gap:6px;">
+              ${Array.from({length: ex.sets}).map((_, sIdx) => {
+                const done = !!setsDone[sIdx];
+                return `
+                  <button onclick="toggleSet('${exKey}', ${sIdx})" style="padding:8px 4px; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer; background:${done ? 'var(--emerald)' : 'var(--card-inner)'}; color:${done ? '#0a0f1d' : 'var(--text)'}; border:1px solid var(--border);">
+                    Сет ${sIdx+1} ${done ? '✓' : ''}
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleSet(key, sIdx) {
+      if (!state.workoutSets[key]) state.workoutSets[key] = [];
+      state.workoutSets[key][sIdx] = !state.workoutSets[key][sIdx];
+      saveData();
+      beep(680, 0.06);
+      renderWorkout();
+      // Auto timer 90s
+      setTimerSec(90);
+      toggleTimer();
+    }
+
+    // Grocery & Budget
+    function renderGrocery() {
+      let total = 0;
+      GROCERY_DEFAULT.forEach(item => {
+        const pr = state.customPrices[item.id] !== undefined ? state.customPrices[item.id] : item.defPrice;
+        total += pr;
+      });
+      total = Math.round(total * 100) / 100;
+      document.getElementById('cartTotalSumDisplay').innerText = total.toFixed(2);
+      const isOver = total > 50.00;
+      const bBadge = document.getElementById('budgetStatusBadge');
+      bBadge.innerText = isOver ? `Превышение +${(total - 50.00).toFixed(2)} €` : `Лимит 50.00 € (Ок)`;
+      bBadge.className = isOver ? 'badge badge-red' : 'badge badge-emerald';
+      document.getElementById('budgetProgressBar').style.width = `${Math.min(100, (total / 50.00) * 100)}%`;
+
+      const list = document.getElementById('groceryItemsList');
+      list.innerHTML = GROCERY_DEFAULT.map(item => {
+        const isBought = !!state.boughtItems[item.id];
+        const pr = state.customPrices[item.id] !== undefined ? state.customPrices[item.id] : item.defPrice;
+        return `
+          <div class="grocery-item ${isBought ? 'bought' : ''}">
+            <div class="grocery-left" onclick="toggleBought('${item.id}')">
+              <div class="custom-check">${isBought ? '✓' : ''}</div>
+              <div>
+                <div class="grocery-name">${item.name}</div>
+                <div class="grocery-sub">
+                  <span>${item.pack}</span>
+                  <span>·</span>
+                  <span class="grocery-tag">🇩🇪 ${item.german}</span>
+                </div>
+              </div>
+            </div>
+            <div class="price-input-box" onclick="event.stopPropagation()">
+              <input type="number" step="0.01" min="0" value="${pr}" onchange="changePrice('${item.id}', this.value)" class="price-input" />
+              <span style="font-size:11px; font-weight:700; color:var(--text-muted); margin-left:2px;">€</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleBought(id) {
+      state.boughtItems[id] = !state.boughtItems[id];
+      saveData();
+      beep(state.boughtItems[id] ? 700 : 350, 0.05);
+      renderGrocery();
+    }
+
+    function changePrice(id, val) {
+      const num = parseFloat(val);
+      state.customPrices[id] = isNaN(num) ? 0 : Math.round(num * 100) / 100;
+      saveData();
+      renderGrocery();
+    }
+
+    // Hydration
+    function renderWater() {
+      const ml = state.water * 250;
+      document.getElementById('waterCountBadge').innerText = `${ml} / 3000 мл`;
+      document.getElementById('waterProgressBar').style.width = `${Math.min(100, (state.water / 12) * 100)}%`;
+      const grid = document.getElementById('glassesGrid');
+      grid.innerHTML = Array.from({length: 12}).map((_, idx) => {
+        const filled = idx < state.water;
+        return `
+          <div onclick="toggleGlass(${idx})" class="glass-btn ${filled ? 'filled' : ''}">
+            <span style="font-size:10px; font-family:var(--font-mono);">#${idx+1}</span>
+            <span style="font-size:11px; font-weight:700; margin-top:2px;">${(idx+1)*250} мл</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleGlass(idx) {
+      state.water = state.water === idx + 1 ? idx : idx + 1;
+      saveData();
+      beep(state.water > 0 ? 580 : 320, 0.08);
+      renderWater();
+    }
+
+    // Reset Day
+    document.getElementById('resetDayBtn').addEventListener('click', () => {
+      if (confirm('Сбросить чекбоксы питания, подходов и воды за сегодня? (Стрики, вес и цены сохранятся)')) {
+        state.meals = {};
+        state.workoutSets = {};
+        state.water = 0;
+        saveData();
+        beep(400, 0.2);
+        renderDashboard();
+        renderNutrition();
+        renderWorkout();
+        renderWater();
+      }
+    });
+
+    // Sound toggle
+    document.getElementById('soundBtn').addEventListener('click', () => {
+      state.sound = !state.sound;
+      saveData();
+      document.getElementById('soundBtn').innerText = state.sound ? '🔊' : '🔇';
+      document.getElementById('soundBtn').classList.toggle('active', state.sound);
+    });
+
+    // Init on load
+    loadData();
+    renderDashboard();
+    renderNutrition();
+    renderWorkout();
+    renderGrocery();
+    renderWater();
+  </script>
+</body>
+</html>
