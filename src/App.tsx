@@ -9,6 +9,8 @@ import { HydrationTab } from './components/HydrationTab';
 import { WeightModal } from './components/WeightModal';
 import { ResetModal } from './components/ResetModal';
 import { BackupModal } from './components/BackupModal';
+import { APKGuideModal } from './components/APKGuideModal';
+import { OfflineIndicator } from './components/OfflineIndicator';
 import { INITIAL_MEALS, GROCERY_ITEMS } from './data/initialData';
 import { AppState } from './types';
 import { loadAppState, saveAppState, getTodayDateString } from './utils/storage';
@@ -19,6 +21,7 @@ export default function App() {
   const [isWeightModalOpen, setIsWeightModalOpen] = useState<boolean>(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState<boolean>(false);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState<boolean>(false);
+  const [isAPKGuideOpen, setIsAPKGuideOpen] = useState<boolean>(false);
 
   // Sync to localStorage on every state change
   useEffect(() => {
@@ -288,6 +291,7 @@ export default function App() {
         soundEnabled={state.soundEnabled}
         onToggleSound={handleToggleSound}
         onOpenResetModal={() => setIsResetModalOpen(true)}
+        onOpenAPKGuide={() => setIsAPKGuideOpen(true)}
         caloriesConsumed={caloriesConsumed}
         totalCalories={2840}
       />
@@ -383,6 +387,13 @@ export default function App() {
         onImportState={handleImportState}
         soundEnabled={state.soundEnabled}
       />
+
+      <APKGuideModal
+        isOpen={isAPKGuideOpen}
+        onClose={() => setIsAPKGuideOpen(false)}
+      />
+
+      <OfflineIndicator />
     </div>
   );
 }
